@@ -14,7 +14,7 @@
   },
   {
     "id": "1758279613048",
-    "full_name": "Kris Basn",
+    "full_name": "Krishna Basnet",
     "email": "krishan12@gmail.com",
     "password": "$2b$10$qbe0rHcwffG3eIt1ETliduoDtX7vAV71KUGvKm8eYskg1qdZkevjC",
     "phone_number": "673546437",
@@ -23,6 +23,6 @@
     "service_type": "Hair Salon",
     "user_type": "business",
     "created_at": "2025-09-19T11:00:13.048Z",
-    "loginStatus": true
+    "loginStatus": false
   }
 ]

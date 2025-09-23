@@ -1,10 +1,9 @@
-import { readServices, writeServices } from "../utils/fileHelper.js";
+import * as mongoHelper from "../utils/mongoHelper.js";
 
-// Ensure the fileHelper has readServices/writeServices functions, similar to users/business
-
-export const getServices = (req, res) => {
+// --- Get all services ---
+export const getServices = async (req, res) => {
   try {
-    const services = readServices();
+    const services = await mongoHelper.readServices();
     res.status(200).json(services);
   } catch (err) {
     console.error(err);
@@ -12,16 +11,30 @@ export const getServices = (req, res) => {
   }
 };
 
-export const addService = (req, res) => {
+// --- Get service by ID ---
+export const getServiceById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const services = await mongoHelper.readServices();
+    const service = services.find(s => String(s.id) === String(id));
+    if (!service) return res.status(404).json({ message: "Service not found" });
+
+    res.status(200).json(service);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// --- Add a new service ---
+export const addService = async (req, res) => {
   try {
     const { name, price, category, description, duration } = req.body;
-    console.log("Incoming body:", req.body);
 
     if (!name || !price || !category) {
       return res.status(400).json({ message: "Name, price, and category are required" });
     }
 
-    const services = readServices();
     const newService = {
       id: Date.now().toString(),
       name,
@@ -29,13 +42,51 @@ export const addService = (req, res) => {
       category,
       duration,
       description: description || "",
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
 
-    services.push(newService);
-    writeServices(services);
+    const savedService = await mongoHelper.addService(newService);
+    res.status(201).json(savedService);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
-    res.status(201).json(newService);
+// --- Update a service ---
+export const updateService = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, price, category, description, duration } = req.body;
+
+    if (!name || !price || !category) {
+      return res.status(400).json({ message: "Name, price, and category are required" });
+    }
+
+    const updatedService = await mongoHelper.updateService(id, {
+      name,
+      price,
+      category,
+      description: description || "",
+      duration,
+    });
+
+    if (!updatedService) return res.status(404).json({ message: "Service not found" });
+    res.status(200).json(updatedService);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// --- Delete a service ---
+export const deleteService = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await mongoHelper.deleteService(id);
+    if (!deleted) return res.status(404).json({ message: "Service not found" });
+
+    res.status(204).send();
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

@@ -1,81 +1,89 @@
-import fs from "fs";
-import path from "path";
+import * as mongoHelper from "../utils/mongoHelper.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-import { readUsers, writeUsers } from "../utils/fileHelper.js";
-
+// --- Register ---
 export const register = async (req, res) => {
-  const { name, email, password, role, phone, avatar, selectedCity } = req.body;
-  const users = readUsers();
-  const cleanEmail = email.trim().toLowerCase();
-
-  if (users.find(u => u.email.toLowerCase() === cleanEmail)) {
-    return res.status(400).json({ msg: "User already exists" });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = {
-    id: Date.now(),
-    name: name || "",
-    email: cleanEmail,
-    password: hashedPassword,
-    role: role || "customer",
-    phone: phone || "",
-    avatar: avatar || "",
-    selectedCity: selectedCity || null,
-    loginStatus: false,
-  };
-
-  users.push(newUser);
-  writeUsers(users);
-  res.json({ msg: "User registered successfully" });
-};
-
-export const login = async (req, res) => {
-  const { email, password } = req.body;
-  const users = readUsers();
-  const cleanEmail = email.trim().toLowerCase();
-  const userIndex = users.findIndex(u => u.email.toLowerCase() === cleanEmail);
-
-  if (userIndex === -1) return res.status(400).json({ msg: "Invalid credentials" });
-
-  const user = users[userIndex];
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
-
-  users[userIndex].loginStatus = true;
-  writeUsers(users);
-
-  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "365d" });
-
-  res.json({
-    token,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phone: user.phone,
-      avatar: user.avatar,
-      selectedCity: user.selectedCity,
-      loginStatus: true,
-    },
-  });
-};
-
-export const getMe = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ msg: "No token provided" });
-
   try {
+    const { name, email, password, role, phone, avatar, selectedCity } = req.body;
+    const cleanEmail = email.trim().toLowerCase();
+
+    const users = await mongoHelper.readUsers();
+    if (users.find(u => u.email.toLowerCase() === cleanEmail)) {
+      return res.status(400).json({ msg: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = {
+      id: Date.now().toString(),
+      name: name || "",
+      email: cleanEmail,
+      password: hashedPassword,
+      role: role || "customer",
+      phone: phone || "",
+      avatar: avatar || "",
+      selectedCity: selectedCity || null,
+      loginStatus: false,
+    };
+
+    await mongoHelper.addUser(newUser);
+    res.status(201).json({ msg: "User registered successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// --- Login ---
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const cleanEmail = email.trim().toLowerCase();
+
+    const users = await mongoHelper.readUsers();
+    const user = users.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!user) return res.status(400).json({ msg: "Invalid credentials" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+
+    // Update loginStatus in DB
+    await mongoHelper.updateUser(user.id, { loginStatus: true });
+
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "365d" });
+
+    res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        avatar: user.avatar,
+        selectedCity: user.selectedCity,
+        loginStatus: true,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// --- Get logged-in user ---
+export const getMe = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ msg: "No token provided" });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const users = readUsers();
+    const users = await mongoHelper.readUsers();
     const user = users.find(u => u.id === decoded.id);
 
     if (!user) return res.status(404).json({ msg: "User not found" });
 
-    res.json({
+    res.status(200).json({
       id: user.id,
       name: user.name,
       email: user.email,
@@ -85,62 +93,60 @@ export const getMe = (req, res) => {
       selectedCity: user.selectedCity,
       loginStatus: user.loginStatus,
     });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(401).json({ msg: "Invalid token" });
   }
 };
 
-export const updateMe = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ msg: "No token provided" });
-
+// --- Update logged-in user ---
+export const updateMe = async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ msg: "No token provided" });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const users = readUsers();
-    const userIndex = users.findIndex(u => u.id === decoded.id);
-
-    if (userIndex === -1) return res.status(404).json({ msg: "User not found" });
-
     const { name, phone, avatar, selectedCity } = req.body;
 
-    if (name !== undefined) users[userIndex].name = name;
-    if (phone !== undefined) users[userIndex].phone = phone;
-    if (avatar !== undefined) users[userIndex].avatar = avatar;
-    if (selectedCity !== undefined) users[userIndex].selectedCity = selectedCity;
+    const updatedFields = {};
+    if (name !== undefined) updatedFields.name = name;
+    if (phone !== undefined) updatedFields.phone = phone;
+    if (avatar !== undefined) updatedFields.avatar = avatar;
+    if (selectedCity !== undefined) updatedFields.selectedCity = selectedCity;
 
-    writeUsers(users);
+    const updatedUser = await mongoHelper.updateUser(decoded.id, updatedFields);
+    if (!updatedUser) return res.status(404).json({ msg: "User not found" });
 
-    res.json({
+    res.status(200).json({
       msg: "Profile updated successfully",
       user: {
-        id: users[userIndex].id,
-        name: users[userIndex].name,
-        email: users[userIndex].email,
-        role: users[userIndex].role,
-        phone: users[userIndex].phone,
-        avatar: users[userIndex].avatar,
-        selectedCity: users[userIndex].selectedCity,
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        phone: updatedUser.phone,
+        avatar: updatedUser.avatar,
+        selectedCity: updatedUser.selectedCity,
       },
     });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(401).json({ msg: "Invalid token" });
   }
 };
 
-export const logout = (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ msg: "No token provided" });
-
+// --- Logout ---
+export const logout = async (req, res) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const users = readUsers();
-    const userIndex = users.findIndex(u => u.id === decoded.id);
-    if (userIndex === -1) return res.status(404).json({ msg: "User not found" });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ msg: "No token provided" });
 
-    users[userIndex].loginStatus = false;
-    writeUsers(users);
-    res.json({ msg: "Logged out successfully" });
-  } catch {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    await mongoHelper.updateUser(decoded.id, { loginStatus: false });
+
+    res.status(200).json({ msg: "Logged out successfully" });
+  } catch (err) {
+    console.error(err);
     res.status(401).json({ msg: "Invalid token" });
   }
 };

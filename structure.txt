@@ -1,0 +1,34 @@
+Folder PATH listing for volume Windows-SSD
+Volume serial number is 3C19-656D
+C:.
+|   .env
+|   package.json
+|   server.js
+|   structure.txt
+|   
++---controllers
+|       appointmentsController.js
+|       businessAuthController.js
+|       businessController.js
+|       business_settingsController.js
+|       customerAuthController.js
+|       serviceController.js
+|       
++---data
+|       appointments.json
+|       business.json
+|       services.json
+|       users.json
+|       
++---models
++---routes
+|       appointments.js
+|       businessAuth.js
+|       businessRoutes.js
+|       business_settings.js
+|       customerAuth.js
+|       serviceRoutes.js
+|       
+\---utils
+        fileHelper.js
+        
