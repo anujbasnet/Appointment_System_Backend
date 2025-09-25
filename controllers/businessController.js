@@ -29,3 +29,22 @@ export const updateBusiness = async (req, res) => {
     res.status(500).json({ message: "Failed to update business" });
   }
 };
+export const getAllBusinesses = async (req, res) => {
+  try {
+    const businesses = await mongoHelper.readBusinesses();
+    const formatted = businesses.map(b => ({
+      id: b.id,
+      name: b.full_name,
+      address: b.address,
+      category: b.service_type,
+      image: b.image || 'https://via.placeholder.com/150',
+      rating: b.rating || 0,
+      reviewCount: b.reviewCount || 0,
+    }));
+    res.status(200).json(formatted);
+  } catch (err) {
+    console.error("Error fetching businesses:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

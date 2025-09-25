@@ -19,6 +19,7 @@ export const getBusinessById = async (req, res) => {
   }
 };
 
+
 // Update business by ID
 export const updateBusinessById = async (req, res) => {
   const { id } = req.params;

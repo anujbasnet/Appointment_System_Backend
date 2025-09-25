@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const appointmentSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
   userId: { type: String, required: true },
   businessId: { type: String },
   title: { type: String, required: true },
