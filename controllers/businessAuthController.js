@@ -15,6 +15,7 @@ export const signupBusiness = async (req, res) => {
       serviceName,
       serviceType,
       user_type,
+      logoUrl,
     } = req.body;
 
     if (
@@ -46,7 +47,8 @@ export const signupBusiness = async (req, res) => {
       address,
       service_name: serviceName,
       service_type: serviceType,
-      user_type: user_type || "business",
+  user_type: user_type || "business",
+  logoUrl: logoUrl || null,
       created_at: new Date(),
       loginStatus: false,
     });

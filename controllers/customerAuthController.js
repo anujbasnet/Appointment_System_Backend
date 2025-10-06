@@ -150,3 +150,25 @@ export const logout = async (req, res) => {
     res.status(401).json({ msg: "Invalid token" });
   }
 };
+
+// --- Change password ---
+export const changePassword = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ msg: "No token provided" });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ msg: "Missing fields" });
+    const users = await mongoHelper.readUsers();
+    const user = users.find(u => u.id === decoded.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ msg: "Current password incorrect" });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await mongoHelper.updateUser(user.id, { password: hashedPassword });
+    res.status(200).json({ msg: "Password updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ msg: "Invalid token" });
+  }
+};

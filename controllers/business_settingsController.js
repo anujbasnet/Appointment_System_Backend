@@ -1,4 +1,5 @@
 import * as mongoHelper from "../utils/mongoHelper.js";
+import Business from "../models/Business.js";
 
 // Get business by ID
 export const getBusinessById = async (req, res) => {
@@ -6,7 +7,7 @@ export const getBusinessById = async (req, res) => {
 
   try {
     // Fetch business directly from MongoDB
-    const business = await mongoHelper.Business.findOne({ id });
+  const business = await Business.findOne({ id });
 
     if (!business) {
       return res.status(404).json({ message: "Business not found" });
