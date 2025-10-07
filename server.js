@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import servicesRoutes from "./routes/serviceRoutes.js";
+import businessEmbeddedServices from "./routes/businessEmbeddedServices.js";
 import businessRoutes from "./routes/business_settings.js";
 import adminBusinessRoutes from "./routes/businessRoutes.js";
 import connectDB from "./utils/db.js";
@@ -30,7 +30,8 @@ app.use("/api/auth", customerAuthRoutes);          // Customer authentication ro
 app.use("/api/auth/business", businessAuthRoutes); // Business authentication routes
 app.use("/api/appointments", appointmentRoutes);   // Appointment routes
 
-app.use("/api/services", servicesRoutes);
+// NOTE: Global /api/services removed in favor of embedded services under /api/business/:businessId/services
+app.use('/api/business', businessEmbeddedServices); // embedded services first
 app.use('/api/business', businessRoutes);
 app.use('/api/admin/business', adminBusinessRoutes);
 app.use("/api/admin", adminRoutes);

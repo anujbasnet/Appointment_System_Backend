@@ -36,25 +36,26 @@ export const getBusinessById = async (req, res) => {
   try {
     const { id } = req.params;
     const businesses = await mongoHelper.readBusinesses();
-    const business = businesses.find(b => b.id === id);
-    if (!business) return res.status(404).json({ message: 'Business not found' });
+    const business = businesses.find((b) => b.id === id);
+    if (!business)
+      return res.status(404).json({ message: "Business not found" });
     res.status(200).json({ business });
   } catch (err) {
-    console.error('Error fetching business by id:', err);
-    res.status(500).json({ message: 'Failed to fetch business' });
+    console.error("Error fetching business by id:", err);
+    res.status(500).json({ message: "Failed to fetch business" });
   }
 };
 export const getAllBusinesses = async (req, res) => {
   try {
     const businesses = await mongoHelper.readBusinesses();
-    const formatted = businesses.map(b => ({
+    const formatted = businesses.map((b) => ({
       id: b.id,
       name: b.full_name,
+      service:b.service_type,
       address: b.address,
       category: b.service_type,
-      image: b.image || 'https://via.placeholder.com/150',
-      rating: b.rating || 0,
-      reviewCount: b.reviewCount || 0,
+      image: b.coverPhotoUrl || "https://via.placeholder.com/150",
+      // rating: b.rating || 0,
     }));
     res.status(200).json(formatted);
   } catch (err) {
@@ -62,4 +63,3 @@ export const getAllBusinesses = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
