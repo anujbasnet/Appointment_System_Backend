@@ -5,6 +5,7 @@ import Admin from "../models/Admin.js";
 import auth from "../Middleware/auth.js";
 import { loginAdmin } from "../controllers/adminAuthController.js";
 import { sendToBusinesses, sendToCustomers } from "../controllers/NotificationsController.js";
+import { listCustomersWithStats, updateCustomer } from "../controllers/adminCustomersController.js";
 const router = express.Router();
 
 // Login route
@@ -38,5 +39,9 @@ router.put("/change-credentials", auth, async (req, res) => {
 
 router.post("/send-to-businesses", auth, sendToBusinesses);
 router.post("/send-to-customers", auth, sendToCustomers);
+
+// Customers aggregated list (protected)
+router.get('/customers', auth, listCustomersWithStats);
+router.put('/customers/:id', auth, updateCustomer);
 
 export default router;
