@@ -21,8 +21,8 @@ export const updateBusiness = async (id, data) =>
 export const deleteBusiness = async (id) =>
   Business.findOneAndDelete({ id });
 
-// APPOINTMENTS
-export const readAppointments = async () => Appointment.find({});
+// APPOINTMENTS (new schema uses id, user_id, business_id, service_id, date, time, status)
+export const readAppointments = async (filter = {}) => Appointment.find(filter);
 export const writeAppointments = async (appointments) => Appointment.insertMany(appointments);
 export const addAppointment = async (appointmentData) => new Appointment(appointmentData).save();
 export const updateAppointment = async (id, data) =>

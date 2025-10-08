@@ -23,7 +23,8 @@ const app = express();
 
 // MIDDLEWARE
 app.use(cors()); // Enable CORS
-app.use(express.json({ limit: '6mb' })); // allow base64 logo uploads (tweak size as needed)
+// Increase body limit to accommodate base64 staff avatars / cover photos
+app.use(express.json({ limit: '15mb' })); // adjust if you expect larger images
 
 // ROUTES
 app.use("/api/auth", customerAuthRoutes);          // Customer authentication routes
