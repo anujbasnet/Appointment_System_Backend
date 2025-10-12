@@ -54,6 +54,7 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // CREATE DEFAULT ADMIN 
 import Admin from "./models/Admin.js";
+import { startStatusCleaner } from "./utils/statusCleaner.js";
 
 const createDefaultAdmin = async () => {
   const existing = await Admin.findOne({ username: "admin" });
@@ -64,3 +65,5 @@ const createDefaultAdmin = async () => {
   }
 };
 createDefaultAdmin();
+// Start periodic background job for status demotion
+startStatusCleaner();

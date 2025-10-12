@@ -19,7 +19,7 @@ const appointmentSchema = new mongoose.Schema({
   service_id: { type: String, required: true },
   date: { type: String, required: true }, // store as ISO date string (yyyy-mm-dd) for simple querying
   time: { type: String, required: true }, // store raw time label (e.g. "10:00 AM")
-  status: { type: String, enum: ["booked", "canceled", "completed"], default: "booked" },
+  status: { type: String, enum: ["waiting", "notbooked", "booked", "canceled", "completed"], default: "waiting" },
   specialist: {
     id: String,
     name: String,
