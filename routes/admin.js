@@ -1,6 +1,6 @@
 // routes/admin.js
 import express from "express";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import Admin from "../models/Admin.js";
 import auth from "../Middleware/auth.js";
 import { loginAdmin } from "../controllers/adminAuthController.js";
