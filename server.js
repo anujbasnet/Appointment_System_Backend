@@ -7,7 +7,6 @@ import adminBusinessRoutes from "./routes/businessRoutes.js";
 import connectDB from "./utils/db.js";
 import adminRoutes from "./routes/admin.js";
 import notificationsRoutes from "./routes/notifications.js";
-
 // Load environment variables from .env
 dotenv.config();
 
@@ -35,6 +34,8 @@ app.use("/api/appointments", appointmentRoutes);   // Appointment routes
 app.use('/api/business', businessEmbeddedServices); // embedded services first
 app.use('/api/business', businessRoutes);
 app.use('/api/admin/business', adminBusinessRoutes);
+import adminCustomersRoutes from "./routes/admin.js";
+app.use('/api/admin/customers', adminCustomersRoutes); // legacy plural route
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationsRoutes);
 // DEFAULT ROUTE
