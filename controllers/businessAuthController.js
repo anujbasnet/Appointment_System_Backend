@@ -104,3 +104,29 @@ export const loginBusiness = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+// --- Change Password ---
+export const changePasswordBusiness = async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+
+    if (!email || !currentPassword || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const business = await Business.findOne({ email: email.toLowerCase() }).select('+password');
+    if (!business) return res.status(404).json({ message: "Business not found" });
+
+    const isMatch = await bcrypt.compare(currentPassword, business.password);
+    if (!isMatch) return res.status(400).json({ message: "Current password is incorrect" });
+
+    business.password = await bcrypt.hash(newPassword, 10);
+    await business.save();
+
+    return res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Change password error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+

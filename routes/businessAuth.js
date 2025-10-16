@@ -1,13 +1,15 @@
 import express from "express";
 const router = express.Router();
-import { signupBusiness, loginBusiness } from "../controllers/businessAuthController.js";
+import { signupBusiness, loginBusiness, changePasswordBusiness } from "../controllers/businessAuthController.js";
 import * as mongoHelper from "../utils/mongoHelper.js";
+import { changePassword } from "../controllers/customerAuthController.js";
 
 // POST /api/auth/business/signup
 router.post("/signup", signupBusiness);
 
 // POST /api/auth/business/login
 router.post("/login", loginBusiness);
+router.post("/change-password", changePasswordBusiness);
 
 // GET /api/auth/business/profile?businessId=xxx
 router.get("/profile", async (req, res) => {
