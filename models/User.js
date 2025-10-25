@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, default: "" },
   avatar: { type: String, default: "" },
   selectedCity: { type: String, default: "" },
-  loginStatus: { type: Boolean, default: false }
+  loginStatus: { type: mongoose.Schema.Types.Mixed, default: false }
 });
 
 const User = mongoose.model("User", userSchema);
