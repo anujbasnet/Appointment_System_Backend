@@ -177,17 +177,20 @@ export const updateUserStatus = async (req, res) => {
     const { id } = req.params;
     const { loginStatus } = req.body;
 
-    if (typeof loginStatus !== "boolean") {
-      return res.status(400).json({ msg: "loginStatus must be a boolean" });
+    // ✅ Allow string "blocked" or boolean false
+    if (loginStatus !== "blocked" && loginStatus !== false) {
+      return res.status(400).json({ msg: "Invalid loginStatus value" });
     }
 
+    // Update user in your database
     const updatedUser = await mongoHelper.updateUser(id, { loginStatus });
+
     if (!updatedUser) {
       return res.status(404).json({ msg: "User not found" });
     }
 
     res.status(200).json({
-      msg: `User ${loginStatus ? "unblocked" : "blocked"} successfully`,
+      msg: `User ${loginStatus === "blocked" ? "blocked" : "unblocked"} successfully`,
       user: updatedUser,
     });
   } catch (err) {
