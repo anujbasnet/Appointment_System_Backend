@@ -48,7 +48,6 @@ export const login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
     // Update loginStatus in DB
-    await mongoHelper.updateUser(user.id, { loginStatus: true });
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "365d" });
 
