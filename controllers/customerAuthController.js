@@ -61,7 +61,7 @@ export const login = async (req, res) => {
         phone: user.phone,
         avatar: user.avatar,
         selectedCity: user.selectedCity,
-        loginStatus: true,
+        loginStatus: user.loginStatus,
       },
     });
   } catch (err) {
