@@ -27,7 +27,7 @@ router.get("/profile", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-router.post(":id/status", async (req, res) => {
+router.post("/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
     const { loginStatus } = req.body;
