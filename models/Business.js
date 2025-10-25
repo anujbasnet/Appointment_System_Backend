@@ -30,7 +30,7 @@ const businessSchema = new mongoose.Schema({
   services: { type: Array, default: [] },
   user_type: { type: String, default: "business" },
   created_at: { type: Date, default: Date.now },
-  loginStatus: { type: Boolean, default: false }
+  loginStatus: { type: mongoose.Schema.Types.Mixed, default: false }
 });
 
 const Business = mongoose.model("Business", businessSchema);
