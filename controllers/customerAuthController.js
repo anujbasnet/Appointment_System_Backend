@@ -172,3 +172,26 @@ export const changePassword = async (req, res) => {
     res.status(401).json({ msg: "Invalid token" });
   }
 };
+export const updateUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { loginStatus } = req.body;
+
+    if (typeof loginStatus !== "boolean") {
+      return res.status(400).json({ msg: "loginStatus must be a boolean" });
+    }
+
+    const updatedUser = await mongoHelper.updateUser(id, { loginStatus });
+    if (!updatedUser) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.status(200).json({
+      msg: `User ${loginStatus ? "unblocked" : "blocked"} successfully`,
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error("Error updating user status:", err);
+    res.status(500).json({ msg: "Server error while updating user status" });
+  }
+};
