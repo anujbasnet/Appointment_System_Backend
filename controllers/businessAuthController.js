@@ -79,6 +79,11 @@ export const loginBusiness = async (req, res) => {
     if (!business)
       return res.status(400).json({ message: "Invalid email or password" });
 
+    // Check if blocked
+    if (business.loginStatus === "blocked") {
+      return res.status(403).json({ message: "Your account has been blocked by admin" });
+    }
+
     const isMatch = await bcrypt.compare(password, business.password);
     if (!isMatch)
       return res.status(400).json({ message: "Invalid email or password" });
@@ -90,9 +95,9 @@ export const loginBusiness = async (req, res) => {
       { expiresIn: "365d" }
     );
 
-    // Update login status in DB
-    business.loginStatus = true;
-    await business.save();
+    // Optional: update loginStatus if needed (e.g., last login time)
+    // business.loginStatus = true;
+    // await business.save();
 
     return res.status(200).json({
       message: "Login successful",
@@ -104,6 +109,7 @@ export const loginBusiness = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 // --- Change Password ---
 export const changePasswordBusiness = async (req, res) => {
   try {
